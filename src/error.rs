@@ -92,3 +92,21 @@ impl From<sled::CompareAndSwapError> for BkesError {
         }
     }
 }
+
+impl From<rdkafka::error::KafkaError> for BkesError {
+    fn from(err: rdkafka::error::KafkaError) -> BkesError {
+        BkesError::Server(Box::new(err))
+    }
+}
+
+impl From<std::net::AddrParseError> for BkesError {
+    fn from(err: std::net::AddrParseError) -> BkesError {
+        BkesError::Server(Box::new(err))
+    }
+}
+
+impl From<tonic::transport::Error> for BkesError {
+    fn from(err: tonic::transport::Error) -> BkesError {
+        BkesError::Server(Box::new(err))
+    }
+}
