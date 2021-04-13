@@ -19,11 +19,11 @@ message Error {
 }
 
 message StoreSuccess {
-    uint64 timestamp = 1;
+  int64 timestamp = 1;
 }
 
 message Record {
-  uint64 timestamp = 1;
+  int64 timestamp = 1;
   bytes value = 2;
 }
 

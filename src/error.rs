@@ -110,3 +110,9 @@ impl From<tonic::transport::Error> for BkesError {
         BkesError::Server(Box::new(err))
     }
 }
+
+impl From<tokio::task::JoinError> for BkesError {
+    fn from(err: tokio::task::JoinError) -> BkesError {
+        BkesError::Server(Box::new(err))
+    }
+}

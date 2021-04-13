@@ -1,19 +1,13 @@
 use crate::api;
 use crate::error::BkesError;
+use crate::util::get_time;
 use prost::Message;
 use std::env;
 use std::path::Path;
-use std::time::SystemTime;
 
 #[derive(Debug)]
 pub struct Storage {
     db: sled::Db,
-}
-
-fn get_time() -> Result<u64, BkesError> {
-    Ok(SystemTime::now()
-        .duration_since(SystemTime::UNIX_EPOCH)?
-        .as_secs())
 }
 
 impl Storage {
@@ -25,8 +19,8 @@ impl Storage {
         let db = sled::open(path).unwrap();
         Storage { db }
     }
-    pub fn start(&self, key: Vec<u8>, value: Vec<u8>) -> Result<u64, BkesError> {
-        let timestamp = get_time()?;
+    pub fn start(&self, key: Vec<u8>, value: Vec<u8>) -> Result<i64, BkesError> {
+        let timestamp = get_time();
         let record = api::Record { timestamp, value };
         let records = api::StoredRecords {
             records: vec![record],
@@ -37,13 +31,13 @@ impl Storage {
             .compare_and_swap(key, None as Option<&[u8]>, Some(buf_records))??;
         Ok(timestamp)
     }
-    pub fn add(&self, key: Vec<u8>, value: Vec<u8>, order: u32) -> Result<u64, BkesError> {
+    pub fn add(&self, key: Vec<u8>, value: Vec<u8>, order: u32) -> Result<i64, BkesError> {
         let current_bytes = match self.db.get(&key)? {
             None => {
                 return Err(BkesError::User(format!(
                     "No aggregate was created with key: '{}', so can't add",
                     String::from_utf8_lossy(&key)
-                )))
+                )));
             }
             Some(bytes) => bytes,
         };
@@ -56,7 +50,7 @@ impl Storage {
                 String::from_utf8_lossy(&key)
             )));
         }
-        let timestamp = get_time()?;
+        let timestamp = get_time();
         let record = api::Record { timestamp, value };
         records.push(record);
         let new_records = api::StoredRecords { records };
@@ -74,5 +68,26 @@ impl Storage {
             ))),
             Some(bytes) => Ok(api::StoredRecords::decode(&*bytes)?),
         }
+    }
+    pub(crate) fn add_from_record(&self, key: &[u8], value: &[u8], timestamp: i64) -> Result<(), BkesError> {
+        let current_bytes = self.db.get(key)?;
+        let record = api::Record { timestamp, value: value.to_vec() };
+        let new_records = match &current_bytes {
+            None => api::StoredRecords {
+                records: vec![record],
+            },
+            Some(bytes) => {
+                let mut records = api::StoredRecords::decode(&**bytes)?.records;
+                records.push(record);
+                api::StoredRecords { records }
+            }
+        };
+        let mut buf_new_records: Vec<u8> = Vec::with_capacity(new_records.encoded_len());
+        new_records.encode(&mut buf_new_records).ok();
+        self.db.compare_and_swap(key, current_bytes, Some(buf_new_records))??;
+        Ok(())
+    }
+    pub(crate) async fn store(&self) -> Result<usize, BkesError> {
+        Ok(self.db.flush_async().await?)
     }
 }
