@@ -1,16 +1,12 @@
 use crate::error::BkesError;
 use crate::storage::Storage;
 
-use log::{info, warn};
+use log::info;
 use rdkafka::consumer::{BaseConsumer, Consumer, ConsumerContext, Rebalance};
 use rdkafka::error::KafkaResult;
 use rdkafka::util::Timeout;
 use rdkafka::{ClientConfig, ClientContext, Message, TopicPartitionList};
 use std::ops::Deref;
-use tokio::time::Duration;
-use tokio::sync::Mutex;
-use std::sync::Arc;
-use crate::util::get_time;
 
 struct CustomContext;
 
@@ -39,55 +35,35 @@ fn get_partition_count(consumer_config: ClientConfig, topic: &str) -> Result<usi
     Ok(metadata.topics().deref()[0].partitions().len())
 }
 
-async fn load_partition_to_db(consumer_config: ClientConfig, topic: String, partition: i32, storage: Arc<Mutex<Storage>>) -> Result<i64, BkesError> {
-    let timestamp = get_time();
-    let mut result: i64 = -1;
+async fn load_partition_to_db(
+    consumer_config: ClientConfig,
+    topic: String,
+    partition: i32,
+    storage: Storage,
+) -> Result<(), BkesError> {
     let context = CustomContext;
     let consumer: LoggingConsumer = consumer_config.create_with_context(context)?;
     let mut topic_partition_list = TopicPartitionList::with_capacity(1);
-    topic_partition_list.add_partition(&topic, partition);
+    let offset = storage.get_offset(partition).await?;
+    info!("Found offset: {:?} for partition: {}", offset, partition);
+    topic_partition_list.add_partition_offset(&topic, partition, offset)?;
     consumer
         .assign(&topic_partition_list)
         .expect("Can't subscribe to specified topic-partition");
-    consumer.poll(Timeout::After(Duration::from_millis(300)));
-    loop {
-        let message = consumer.poll(Timeout::After(Duration::from_millis(300)));
-        match message {
-            None => return Ok(result),
-            Some(r) => match r {
-                Ok(b) => {
-                    let record_time = b.timestamp().to_millis().expect("Timestamp present on all records");
-                    //when used while another bkes is still running we want to stop consuming at some point
-                    if record_time > timestamp {
-                        return Ok(result);
-                    } else {
-                        result = b.offset()
-                    }
-                    let bytes = b.payload().expect("bytes present");
-                    let db_lock = storage.lock().await;
-                    db_lock.add_from_record(topic.as_bytes(), bytes, record_time)?;
-                }
-                Err(e) => warn!("Error reading from Kafka: {}", e),
-            },
-        }
+    for message in consumer.iter() {
+        let bm = message?;
+        let partition = bm.partition();
+        let offset = bm.offset();
+        let record_time = bm
+            .timestamp()
+            .to_millis()
+            .expect("Timestamp present on all records");
+        let bytes = bm.payload().expect("bytes present");
+        storage
+            .add_from_record(topic.as_bytes(), bytes, partition, offset, record_time)
+            .await?;
     }
-}
-
-async fn try_load_partition_to_db(consumer_config: ClientConfig, topic: String, partition: i32, storage: Arc<Mutex<Storage>>) -> (i32,Option<i64>) {
-    match load_partition_to_db(consumer_config, topic, partition, storage).await {
-        Ok(offset) => {
-            if offset == -1 {
-                warn!("No records were read for partition: {}", partition);
-                (partition, None)
-            } else {
-                (partition, Some (offset))
-            }
-        }
-        Err(e) => {
-            warn!("Error storing partitions: {}", e);
-            (partition, None)
-        }
-    }
+    Ok(())
 }
 
 pub(crate) async fn sync(kafka_topic: String, kafka_brokers: String) -> Result<Storage, BkesError> {
@@ -102,23 +78,24 @@ pub(crate) async fn sync(kafka_topic: String, kafka_brokers: String) -> Result<S
         .set("auto.offset.reset", "smallest");
     let partitions = get_partition_count(consumer_config.clone(), &kafka_topic)?;
     if partitions == 0 {
-        return Err(BkesError::User(format!("No partitions found for topic {}, the topic should be initialized before running bkes", &kafka_topic)));
+        return Err(BkesError::User(format!(
+            "No partitions found for topic {}, the topic should be initialized before running bkes",
+            &kafka_topic
+        )));
     }
     info!("Found {} partitions", partitions);
-    let storage = Arc::new(Mutex::new(Storage::new()));
+    let storage = Storage::new();
     let mut handles = vec![];
     for partition in 0..partitions as i32 {
-        let kafka_topic_copy = String::from(&kafka_topic);
-        let storage_copy = Arc::clone(&storage);
-        let handle = tokio::spawn({
-            try_load_partition_to_db(consumer_config.clone(), kafka_topic_copy, partition, storage_copy)
-        });
+        let config = consumer_config.clone();
+        let topic = String::from(&kafka_topic);
+        let s = storage.clone();
+        let handle = tokio::spawn(load_partition_to_db(config, topic, partition, s));
         handles.push(handle);
     }
     for handle in handles {
-        let (partition, offset) = handle.await.unwrap();
-        info!("Received offset: {:?} for partition: {}", offset, partition)
+        let result = handle.await.unwrap();
+        info!("Received result: {:?}", result)
     }
-    storage.lock().await.store().await?;
-    Ok(Arc::try_unwrap(storage).unwrap().into_inner())
+    Ok(storage)
 }

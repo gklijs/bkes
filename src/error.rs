@@ -9,7 +9,7 @@ use std::ops::Deref;
 pub enum BkesError {
     User(String),
     Concurrency(String),
-    Server(Box<dyn Error + 'static>),
+    Server(Box<dyn Error + Send + 'static>),
 }
 
 impl fmt::Display for BkesError {
@@ -113,6 +113,18 @@ impl From<tonic::transport::Error> for BkesError {
 
 impl From<tokio::task::JoinError> for BkesError {
     fn from(err: tokio::task::JoinError) -> BkesError {
+        BkesError::Server(Box::new(err))
+    }
+}
+
+impl From<sled::transaction::TransactionError> for BkesError {
+    fn from(err: sled::transaction::TransactionError) -> BkesError {
+        BkesError::Server(Box::new(err))
+    }
+}
+
+impl From<std::io::Error> for BkesError {
+    fn from(err: std::io::Error) -> BkesError {
         BkesError::Server(Box::new(err))
     }
 }

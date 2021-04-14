@@ -23,8 +23,10 @@ message StoreSuccess {
 }
 
 message Record {
-  int64 timestamp = 1;
-  bytes value = 2;
+  bytes value = 1;
+  int32 partition = 2;
+  int64 offset = 3;
+  int64 timestamp = 4;
 }
 
 message StoredRecords {

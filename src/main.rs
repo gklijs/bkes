@@ -5,7 +5,6 @@ mod error;
 mod grpc;
 mod kafka_consumer;
 mod storage;
-mod util;
 
 use crate::api::bkes_server::BkesServer;
 use crate::error::BkesError;
@@ -20,7 +19,7 @@ async fn main() -> Result<(), BkesError> {
     log::info!("starting up");
     let kafka_topic = env::var("KAFKA_TOPIC").expect("KAFKA_TOPIC env property not set");
     let kafka_brokers = env::var("KAFKA_BROKERS").expect("KAFKA_BROKERS env property not set");
-    let storage= sync(kafka_topic, kafka_brokers).await?;
+    let storage = sync(kafka_topic, kafka_brokers).await?;
     let my_bkes = MyBkes::new(storage);
     let addr = match env::var("API_PORT") {
         Ok(val) => format!("0.0.0.0:{}", val).parse()?,
