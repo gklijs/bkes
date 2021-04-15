@@ -7,7 +7,6 @@ use std::env;
 use std::path::Path;
 use tokio::io::{AsyncReadExt, AsyncWriteExt};
 
-
 #[derive(Debug, Clone)]
 pub struct Storage {
     db: sled::Db,

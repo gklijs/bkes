@@ -5,8 +5,11 @@ use log::info;
 use rdkafka::consumer::{BaseConsumer, Consumer, ConsumerContext, Rebalance};
 use rdkafka::error::KafkaResult;
 use rdkafka::util::Timeout;
-use rdkafka::{ClientConfig, ClientContext, Message, TopicPartitionList};
+use rdkafka::{ClientConfig, ClientContext, Message, Offset, TopicPartitionList};
 use std::ops::Deref;
+use std::sync::Arc;
+use std::time::SystemTime;
+use tokio::sync::Notify;
 
 struct CustomContext;
 
@@ -36,22 +39,33 @@ fn get_partition_count(consumer_config: ClientConfig, topic: &str) -> Result<usi
 }
 
 async fn load_partition_to_db(
-    consumer_config: ClientConfig,
+    config: ClientConfig,
     topic: String,
     partition: i32,
     storage: Storage,
-) -> Result<(), BkesError> {
+    offset_notifier: Arc<Notify>,
+) {
     let context = CustomContext;
-    let consumer: LoggingConsumer = consumer_config.create_with_context(context)?;
+    let consumer: LoggingConsumer = config.create_with_context(context).unwrap();
     let mut topic_partition_list = TopicPartitionList::with_capacity(1);
-    let offset = storage.get_offset(partition).await?;
+    let offset = storage.get_offset(partition).await.unwrap();
     info!("Found offset: {:?} for partition: {}", offset, partition);
-    topic_partition_list.add_partition_offset(&topic, partition, offset)?;
+    topic_partition_list
+        .add_partition_offset(&topic, partition, offset)
+        .unwrap();
     consumer
         .assign(&topic_partition_list)
         .expect("Can't subscribe to specified topic-partition");
+    let (_, high_watermark) = consumer
+        .fetch_watermarks(&topic, partition, Timeout::Never)
+        .unwrap();
+    if let Offset::Offset(o) = offset {
+        if o + 1 >= high_watermark {
+            offset_notifier.notify_one()
+        }
+    }
     for message in consumer.iter() {
-        let bm = message?;
+        let bm = message.unwrap();
         let partition = bm.partition();
         let offset = bm.offset();
         let record_time = bm
@@ -61,9 +75,12 @@ async fn load_partition_to_db(
         let bytes = bm.payload().expect("bytes present");
         storage
             .add_from_record(topic.as_bytes(), bytes, partition, offset, record_time)
-            .await?;
+            .await
+            .unwrap();
+        if offset + 1 == high_watermark {
+            offset_notifier.notify_one()
+        }
     }
-    Ok(())
 }
 
 pub(crate) async fn sync(kafka_topic: String, kafka_brokers: String) -> Result<Storage, BkesError> {
@@ -85,17 +102,32 @@ pub(crate) async fn sync(kafka_topic: String, kafka_brokers: String) -> Result<S
     }
     info!("Found {} partitions", partitions);
     let storage = Storage::new();
-    let mut handles = vec![];
+    let start_time = SystemTime::now();
+    let mut notifiers = vec![];
     for partition in 0..partitions as i32 {
+        let notify = Arc::new(Notify::new());
+        let offset_notifier = notify.clone();
         let config = consumer_config.clone();
         let topic = String::from(&kafka_topic);
         let s = storage.clone();
-        let handle = tokio::spawn(load_partition_to_db(config, topic, partition, s));
-        handles.push(handle);
+        tokio::spawn(load_partition_to_db(
+            config,
+            topic,
+            partition,
+            s,
+            offset_notifier,
+        ));
+        notifiers.push(notify);
     }
-    for handle in handles {
-        let result = handle.await.unwrap();
-        info!("Received result: {:?}", result)
+    for notify in notifiers {
+        notify.notified().await
     }
+    info!(
+        "Done reading offsets to end when started, took {:?} seconds",
+        SystemTime::now()
+            .duration_since(start_time)
+            .unwrap()
+            .as_secs()
+    );
     Ok(storage)
 }
