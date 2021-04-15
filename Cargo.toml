@@ -16,3 +16,9 @@ tonic = "0.4"
 
 [build-dependencies]
 tonic-build = "0.4"
+
+[profile.dev]
+panic = "abort"
+
+[profile.release]
+panic = "abort"

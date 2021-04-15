@@ -56,10 +56,10 @@ fn check_ignorable_start_record(
             "Already a verified record for this key, can't start aggregate",
         )));
     }
-    if records[0].timestamp + 10000 > timestamp {
+    if records[0].timestamp + 60000 > timestamp {
         return Err(BkesError::User(format!(
-            "Ten seconds haven't passed to verify the current start record, try in {} ms",
-            records[0].timestamp + 10000 - timestamp
+            "One minute hasn't passed to verify the current start record, try in {} ms",
+            records[0].timestamp + 60000 - timestamp
         )));
     }
     Ok(Some(bytes))
@@ -95,13 +95,13 @@ impl Storage {
             offsets,
         }
     }
-    pub fn start(&self, key: Vec<u8>, value: Vec<u8>) -> Result<i64, BkesError> {
+    pub fn start(&self, key: Vec<u8>, value: Vec<u8>) -> Result<api::Record, BkesError> {
         let timestamp = get_time();
         let current_bytes = match self.records.get(&key)? {
             None => None,
             Some(bytes) => check_ignorable_start_record(bytes, timestamp)?,
         };
-        let record = unverified_record(value, timestamp);
+        let record = unverified_record(value.clone(), timestamp);
         let records = api::StoredRecords {
             records: vec![record],
         };
@@ -109,9 +109,9 @@ impl Storage {
         records.encode(&mut buf_records).ok();
         self.records
             .compare_and_swap(key, current_bytes, Some(buf_records))??;
-        Ok(timestamp)
+        Ok(unverified_record(value, timestamp))
     }
-    pub fn add(&self, key: Vec<u8>, value: Vec<u8>, order: u32) -> Result<i64, BkesError> {
+    pub fn add(&self, key: Vec<u8>, value: Vec<u8>, order: u32) -> Result<api::Record, BkesError> {
         let current_bytes = match self.records.get(&key)? {
             None => {
                 return Err(BkesError::User(format!(
@@ -131,14 +131,14 @@ impl Storage {
             )));
         }
         let timestamp = get_time();
-        let record = unverified_record(value, timestamp);
+        let record = unverified_record(value.clone(), timestamp);
         records.push(record);
         let new_records = api::StoredRecords { records };
         let mut buf_new_records: Vec<u8> = Vec::with_capacity(new_records.encoded_len());
         new_records.encode(&mut buf_new_records).ok();
         self.records
             .compare_and_swap(key, Some(current_bytes), Some(buf_new_records))??;
-        Ok(timestamp)
+        Ok(unverified_record(value, timestamp))
     }
     pub fn retrieve(&self, key: Vec<u8>) -> Result<api::StoredRecords, BkesError> {
         match self.records.get(&key)? {

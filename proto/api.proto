@@ -19,7 +19,9 @@ message Error {
 }
 
 message StoreSuccess {
-  int64 timestamp = 1;
+  int32 partition = 2;
+  int64 offset = 3;
+  int64 timestamp = 4;
 }
 
 message Record {

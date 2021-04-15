@@ -7,9 +7,9 @@ use rdkafka::error::KafkaResult;
 use rdkafka::util::Timeout;
 use rdkafka::{ClientConfig, ClientContext, Message, Offset, TopicPartitionList};
 use std::ops::Deref;
-use std::sync::Arc;
 use std::time::SystemTime;
-use tokio::sync::Notify;
+use tokio::sync::mpsc;
+use tokio::sync::mpsc::Sender;
 
 struct CustomContext;
 
@@ -43,8 +43,9 @@ async fn load_partition_to_db(
     topic: String,
     partition: i32,
     storage: Storage,
-    offset_notifier: Arc<Notify>,
+    sender: Sender<i32>,
 ) {
+    info!("Created thread for partition: {}", partition);
     let context = CustomContext;
     let consumer: LoggingConsumer = config.create_with_context(context).unwrap();
     let mut topic_partition_list = TopicPartitionList::with_capacity(1);
@@ -59,11 +60,23 @@ async fn load_partition_to_db(
     let (_, high_watermark) = consumer
         .fetch_watermarks(&topic, partition, Timeout::Never)
         .unwrap();
-    if let Offset::Offset(o) = offset {
-        if o + 1 >= high_watermark {
-            offset_notifier.notify_one()
+    match offset {
+        Offset::Beginning => {
+            if high_watermark == 0 {
+                sender.send(partition).await.unwrap()
+            }
         }
-    }
+        Offset::Offset(o) => {
+            if o == high_watermark {
+                sender.send(partition).await.unwrap()
+            }
+        }
+        _ => (),
+    };
+    info!(
+        "Found high watermark: {:?} for partition: {}",
+        high_watermark, partition
+    );
     for message in consumer.iter() {
         let bm = message.unwrap();
         let partition = bm.partition();
@@ -72,13 +85,18 @@ async fn load_partition_to_db(
             .timestamp()
             .to_millis()
             .expect("Timestamp present on all records");
-        let bytes = bm.payload().expect("bytes present");
+        let key = bm.key().expect("key present");
+        let value = bm.payload().expect("value present");
+        info!(
+            "reading message with offset {:?} for partition: {}",
+            offset, partition
+        );
         storage
-            .add_from_record(topic.as_bytes(), bytes, partition, offset, record_time)
+            .add_from_record(key, value, partition, offset, record_time)
             .await
             .unwrap();
         if offset + 1 == high_watermark {
-            offset_notifier.notify_one()
+            sender.send(partition).await.unwrap()
         }
     }
 }
@@ -93,7 +111,7 @@ pub(crate) async fn sync(kafka_topic: String, kafka_brokers: String) -> Result<S
         .set("enable.auto.commit", "false")
         .set("statistics.interval.ms", "30000")
         .set("auto.offset.reset", "smallest");
-    let partitions = get_partition_count(consumer_config.clone(), &kafka_topic)?;
+    let partitions = get_partition_count(consumer_config.clone(), &kafka_topic)? as i32;
     if partitions == 0 {
         return Err(BkesError::User(format!(
             "No partitions found for topic {}, the topic should be initialized before running bkes",
@@ -103,27 +121,23 @@ pub(crate) async fn sync(kafka_topic: String, kafka_brokers: String) -> Result<S
     info!("Found {} partitions", partitions);
     let storage = Storage::new();
     let start_time = SystemTime::now();
-    let mut notifiers = vec![];
-    for partition in 0..partitions as i32 {
-        let notify = Arc::new(Notify::new());
-        let offset_notifier = notify.clone();
-        let config = consumer_config.clone();
+    let (sender, mut receiver) = mpsc::channel(partitions as usize);
+    for partition in 0..partitions {
         let topic = String::from(&kafka_topic);
-        let s = storage.clone();
         tokio::spawn(load_partition_to_db(
-            config,
+            consumer_config.clone(),
             topic,
             partition,
-            s,
-            offset_notifier,
+            storage.clone(),
+            sender.clone(),
         ));
-        notifiers.push(notify);
     }
-    for notify in notifiers {
-        notify.notified().await
+    for _ in 0..partitions {
+        let p = receiver.recv().await.unwrap();
+        info!("partition {} is ready", p)
     }
     info!(
-        "Done reading offsets to end when started, took {:?} seconds",
+        "Done reading offsets to end, took {:?} seconds",
         SystemTime::now()
             .duration_since(start_time)
             .unwrap()

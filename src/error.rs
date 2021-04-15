@@ -99,6 +99,12 @@ impl From<rdkafka::error::KafkaError> for BkesError {
     }
 }
 
+impl From<(rdkafka::error::KafkaError, rdkafka::message::OwnedMessage)> for BkesError {
+    fn from(err: (rdkafka::error::KafkaError, rdkafka::message::OwnedMessage)) -> BkesError {
+        BkesError::Server(Box::new(err.0))
+    }
+}
+
 impl From<std::net::AddrParseError> for BkesError {
     fn from(err: std::net::AddrParseError) -> BkesError {
         BkesError::Server(Box::new(err))
