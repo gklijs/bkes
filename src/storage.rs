@@ -1,11 +1,11 @@
 use crate::api;
 use crate::error::BkesError;
+use byteorder::{BigEndian, ReadBytesExt, WriteBytesExt};
 use prost::Message;
 use rdkafka::Timestamp;
 use sled::Transactional;
 use std::env;
 use std::path::Path;
-use tokio::io::{AsyncReadExt, AsyncWriteExt};
 
 #[derive(Debug, Clone)]
 pub struct Storage {
@@ -149,7 +149,7 @@ impl Storage {
             Some(bytes) => Ok(api::StoredRecords::decode(&*bytes)?),
         }
     }
-    pub(crate) async fn add_from_record(
+    pub(crate) fn add_from_record(
         &self,
         key: &[u8],
         value: &[u8],
@@ -172,25 +172,25 @@ impl Storage {
                 records: insert_record(bytes, record)?,
             },
         };
-        let mut partition_bytes = Vec::new();
-        partition_bytes.write_i32(partition).await?;
-        let mut offset_bytes = Vec::new();
-        offset_bytes.write_i64(offset).await?;
         (&self.records, &self.offsets).transaction(|(tx_r, tx_o)| {
+            let mut partition_bytes = Vec::new();
+            partition_bytes.write_i32::<BigEndian>(partition).unwrap();
+            let mut offset_bytes = Vec::new();
+            offset_bytes.write_i64::<BigEndian>(offset).unwrap();
             let mut buf_new_records: Vec<u8> = Vec::with_capacity(new_records.encoded_len());
             new_records.encode(&mut buf_new_records).ok();
             tx_r.insert(key, buf_new_records)?;
-            tx_o.insert(partition_bytes.clone(), offset_bytes.clone())?;
+            tx_o.insert(partition_bytes, offset_bytes)?;
             Ok(())
         })?;
         Ok(())
     }
-    pub(crate) async fn get_offset(&self, partition: i32) -> Result<rdkafka::Offset, BkesError> {
+    pub(crate) fn get_offset(&self, partition: i32) -> Result<rdkafka::Offset, BkesError> {
         let mut partition_bytes = Vec::new();
-        partition_bytes.write_i32(partition).await?;
+        partition_bytes.write_i32::<BigEndian>(partition)?;
         match self.offsets.get(&partition_bytes)? {
             None => Ok(rdkafka::Offset::Beginning),
-            Some(b) => Ok(rdkafka::Offset::Offset(b.as_ref().read_i64().await?)),
+            Some(b) => Ok(rdkafka::Offset::Offset(b.as_ref().read_i64::<BigEndian>()?)),
         }
     }
 }

@@ -20,7 +20,7 @@ async fn main() -> Result<(), BkesError> {
     log::info!("starting up");
     let kafka_topic = env::var("KAFKA_TOPIC").expect("KAFKA_TOPIC env property not set");
     let kafka_brokers = env::var("KAFKA_BROKERS").expect("KAFKA_BROKERS env property not set");
-    let storage = sync(kafka_topic.clone(), kafka_brokers.clone()).await?;
+    let storage = sync(kafka_topic.clone(), kafka_brokers.clone())?;
     let my_bkes = MyBkes::new(storage, kafka_topic, kafka_brokers);
     let addr = match env::var("API_PORT") {
         Ok(val) => format!("0.0.0.0:{}", val).parse()?,

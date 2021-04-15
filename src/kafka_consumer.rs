@@ -7,9 +7,10 @@ use rdkafka::error::KafkaResult;
 use rdkafka::util::Timeout;
 use rdkafka::{ClientConfig, ClientContext, Message, Offset, TopicPartitionList};
 use std::ops::Deref;
+use std::sync::mpsc;
+use std::sync::mpsc::Sender;
+use std::thread;
 use std::time::SystemTime;
-use tokio::sync::mpsc;
-use tokio::sync::mpsc::Sender;
 
 struct CustomContext;
 
@@ -38,18 +39,17 @@ fn get_partition_count(consumer_config: ClientConfig, topic: &str) -> Result<usi
     Ok(metadata.topics().deref()[0].partitions().len())
 }
 
-async fn load_partition_to_db(
+fn load_partition_to_db(
     config: ClientConfig,
     topic: String,
     partition: i32,
     storage: Storage,
     sender: Sender<i32>,
 ) {
-    info!("Created thread for partition: {}", partition);
     let context = CustomContext;
     let consumer: LoggingConsumer = config.create_with_context(context).unwrap();
     let mut topic_partition_list = TopicPartitionList::with_capacity(1);
-    let offset = storage.get_offset(partition).await.unwrap();
+    let offset = storage.get_offset(partition).unwrap();
     info!("Found offset: {:?} for partition: {}", offset, partition);
     topic_partition_list
         .add_partition_offset(&topic, partition, offset)
@@ -63,20 +63,16 @@ async fn load_partition_to_db(
     match offset {
         Offset::Beginning => {
             if high_watermark == 0 {
-                sender.send(partition).await.unwrap()
+                sender.send(partition).unwrap()
             }
         }
         Offset::Offset(o) => {
             if o == high_watermark {
-                sender.send(partition).await.unwrap()
+                sender.send(partition).unwrap()
             }
         }
         _ => (),
     };
-    info!(
-        "Found high watermark: {:?} for partition: {}",
-        high_watermark, partition
-    );
     for message in consumer.iter() {
         let bm = message.unwrap();
         let partition = bm.partition();
@@ -87,21 +83,16 @@ async fn load_partition_to_db(
             .expect("Timestamp present on all records");
         let key = bm.key().expect("key present");
         let value = bm.payload().expect("value present");
-        info!(
-            "reading message with offset {:?} for partition: {}",
-            offset, partition
-        );
         storage
             .add_from_record(key, value, partition, offset, record_time)
-            .await
             .unwrap();
         if offset + 1 == high_watermark {
-            sender.send(partition).await.unwrap()
+            sender.send(partition).unwrap()
         }
     }
 }
 
-pub(crate) async fn sync(kafka_topic: String, kafka_brokers: String) -> Result<Storage, BkesError> {
+pub(crate) fn sync(kafka_topic: String, kafka_brokers: String) -> Result<Storage, BkesError> {
     let mut consumer_config: ClientConfig = ClientConfig::new();
     consumer_config
         .set("group.id", "bkes")
@@ -121,19 +112,18 @@ pub(crate) async fn sync(kafka_topic: String, kafka_brokers: String) -> Result<S
     info!("Found {} partitions", partitions);
     let storage = Storage::new();
     let start_time = SystemTime::now();
-    let (sender, mut receiver) = mpsc::channel(partitions as usize);
+    let (s, receiver) = mpsc::channel();
     for partition in 0..partitions {
+        let config = consumer_config.clone();
         let topic = String::from(&kafka_topic);
-        tokio::spawn(load_partition_to_db(
-            consumer_config.clone(),
-            topic,
-            partition,
-            storage.clone(),
-            sender.clone(),
-        ));
+        let storage_clone = storage.clone();
+        let sender = s.clone();
+        thread::spawn(move || {
+            load_partition_to_db(config, topic, partition, storage_clone, sender)
+        });
     }
     for _ in 0..partitions {
-        let p = receiver.recv().await.unwrap();
+        let p = receiver.recv()?;
         info!("partition {} is ready", p)
     }
     info!(

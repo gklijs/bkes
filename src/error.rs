@@ -134,3 +134,9 @@ impl From<std::io::Error> for BkesError {
         BkesError::Server(Box::new(err))
     }
 }
+
+impl From<std::sync::mpsc::RecvError> for BkesError {
+    fn from(err: std::sync::mpsc::RecvError) -> BkesError {
+        BkesError::Server(Box::new(err))
+    }
+}
