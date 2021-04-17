@@ -1,7 +1,7 @@
 use crate::error::BkesError;
 use crate::storage::Storage;
 
-use log::info;
+use log::{debug, info};
 use rdkafka::consumer::{BaseConsumer, Consumer, ConsumerContext};
 use rdkafka::message::BorrowedMessage;
 use rdkafka::util::Timeout;
@@ -29,7 +29,6 @@ struct OffsetChecker {
 
 impl OffsetChecker {
     fn new(partitions: Vec<i32>, goal: Vec<(i32, i64)>, sender: Sender<Vec<i32>>) -> OffsetChecker {
-        info!("created offset checker with: {:?}", goal);
         if goal.is_empty() {
             sender.send(partitions.clone()).unwrap();
             OffsetChecker {
@@ -79,7 +78,7 @@ fn load_partitions_to_db(
     let mut goal = vec![];
     for partition in &partitions {
         let offset = storage.get_offset(*partition).unwrap();
-        info!("Found offset: {:?} for partition: {}", offset, partition);
+        debug!("Found offset: {:?} for partition: {}", offset, partition);
         topic_partition_list
             .add_partition_offset(&topic, *partition, offset)
             .unwrap();
@@ -89,7 +88,7 @@ fn load_partitions_to_db(
         let (_, high_watermark) = consumer
             .fetch_watermarks(&topic, *partition, Timeout::Never)
             .unwrap();
-        info!(
+        debug!(
             "Found high watermark: {:?} for partition: {}",
             high_watermark, partition
         );
@@ -115,16 +114,19 @@ fn load_partitions_to_db(
         let bm = message.unwrap();
         let partition = bm.partition();
         let offset = bm.offset();
-        info!("read offset: {}", offset);
-        let record_time = bm
+        let timestamp = bm
             .timestamp()
             .to_millis()
             .expect("Timestamp present on all records");
         let key = bm.key().expect("key present");
         let value = bm.payload().expect("value present");
         storage
-            .add_from_record(key, value, partition, offset, record_time)
+            .add_from_record(key, value, partition, offset, timestamp)
             .unwrap();
+        debug!(
+            "stored offset: {} for partition: {}, with timestamp: {}",
+            offset, partition, timestamp
+        );
         checker.check(bm);
     }
 }
@@ -178,7 +180,7 @@ pub(crate) fn sync(kafka_topic: String, kafka_brokers: String) -> Result<Storage
     }
     for _ in 0..threads {
         let p = receiver.recv()?;
-        info!("partitions {:?} are ready", p)
+        info!("partitions: {:?} are ready", p)
     }
     info!(
         "Done reading offsets to end, took {:?} seconds",
