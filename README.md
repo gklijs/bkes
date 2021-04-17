@@ -22,3 +22,8 @@ that's done is making sure the order is the same the caller of the api expects.
 
 Records are added to the db with offset and partition at -1. As soon as the record is read, the correct values for the
 offset and partition will be set from the record, when retrieving records you might want to ignore those.
+
+## Development
+
+Use `docker exec kafka kafka-topics --create --topic bkes --bootstrap-server localhost:9092 --partitions 5 --replication-factor 1`
+to create a topic to start.

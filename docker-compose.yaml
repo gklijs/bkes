@@ -1,0 +1,58 @@
+---
+version: "2.4"
+services:
+  zk:
+    image: confluentinc/cp-zookeeper:6.1.0
+    hostname: zk
+    container_name: zk
+    ports:
+      - "2181:2181"
+    environment:
+      ZOOKEEPER_CLIENT_PORT: 2181
+      ZOOKEEPER_TICK_TIME: 2000
+    mem_limit: 200m
+    restart: always
+
+  kafka:
+    image: confluentinc/cp-kafka:6.1.0
+    hostname: kafka
+    container_name: kafka
+    ports:
+      - "9092:9092"
+    depends_on:
+      - zk
+    environment:
+      KAFKA_BROKER_ID: 1
+      KAFKA_ZOOKEEPER_CONNECT: zk:2181
+      KAFKA_ADVERTISED_LISTENERS: PLAINTEXT://kafka:19092,PE://127.0.0.1:9092
+      KAFKA_OFFSETS_TOPIC_REPLICATION_FACTOR: 1
+      KAFKA_COMPRESSION_TYPE: lz4
+      KAFKA_AUTO_CREATE_TOPICS_ENABLE: "true"
+      KAFKA_MIN_INSYNC_REPLICAS: 1
+      KAFKA_GROUP_INITIAL_REBALANCE_DELAY_MS: 0
+      KAFKA_CONFLUENT_LICENSE_TOPIC_REPLICATION_FACTOR: 1
+      KAFKA_CONFLUENT_BALANCER_TOPIC_REPLICATION_FACTOR: 1
+      KAFKA_INTER_BROKER_LISTENER_NAME: PLAINTEXT
+      KAFKA_LISTENER_SECURITY_PROTOCOL_MAP: PLAINTEXT:PLAINTEXT,PE:PLAINTEXT
+      CONFLUENT_SUPPORT_METRICS_ENABLE: "false"
+    mem_limit: 1500m
+    restart: always
+  bkes:
+    build:
+      context: .
+    ports:
+      - 50030:50030
+    volumes:
+      - bkes-data:/opt/data
+    environment:
+      DATA_PATH: /opt/data
+      KAFKA_TOPIC: bkes
+      KAFKA_BROKERS: kafka:19092
+      MAX_CONSUMER_THREADS: 4
+      RUST_LOG: DEBUG
+    restart: always
+
+volumes:
+  bkes-data:
+    external: true
+
