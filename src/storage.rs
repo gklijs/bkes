@@ -117,7 +117,7 @@ impl Storage {
                 return Err(BkesError::User(format!(
                     "No aggregate was created with key: '{}', so can't add",
                     String::from_utf8_lossy(&key)
-                )))
+                )));
             }
             Some(bytes) => bytes,
         };
@@ -190,7 +190,9 @@ impl Storage {
         partition_bytes.write_i32::<BigEndian>(partition)?;
         match self.offsets.get(&partition_bytes)? {
             None => Ok(rdkafka::Offset::Beginning),
-            Some(b) => Ok(rdkafka::Offset::Offset(b.as_ref().read_i64::<BigEndian>()?)),
+            Some(b) => Ok(rdkafka::Offset::Offset(
+                b.as_ref().read_i64::<BigEndian>()? + 1,
+            )),
         }
     }
 }

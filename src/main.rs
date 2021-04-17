@@ -67,7 +67,7 @@ mod test {
         let request = tonic::Request::new(api::AddRequest {
             key: vec![7],
             value: vec![11, 23],
-            order: 3u32,
+            order: 1u32,
         });
         let response = client.add(request).await.unwrap();
 

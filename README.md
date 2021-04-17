@@ -21,8 +21,4 @@ those bytes in a useful way is not part of the responsibility of `bkes`. For it 
 that's done is making sure the order is the same the caller of the api expects.
 
 Records are added to the db with offset and partition at -1. As soon as the record is read, the correct values for the
-offset and partition will be set from the record, when retrieving records you might want to ignore those. Currently appending 
-
-For the `group.id` property of the consumers the fixed value `bkes` is used. The consumer lag for this id, is the amount
-of data not flushed to disk. It's important to remove the committed offsets if the data volume is lost or when you want
-to build up the db from start again.
+offset and partition will be set from the record, when retrieving records you might want to ignore those.

@@ -2,35 +2,62 @@ use crate::error::BkesError;
 use crate::storage::Storage;
 
 use log::info;
-use rdkafka::consumer::{BaseConsumer, Consumer, ConsumerContext, Rebalance};
-use rdkafka::error::KafkaResult;
+use rdkafka::consumer::{BaseConsumer, Consumer, ConsumerContext};
+use rdkafka::message::BorrowedMessage;
 use rdkafka::util::Timeout;
 use rdkafka::{ClientConfig, ClientContext, Message, Offset, TopicPartitionList};
+use std::cmp::min;
 use std::ops::Deref;
 use std::sync::mpsc;
 use std::sync::mpsc::Sender;
-use std::thread;
 use std::time::SystemTime;
+use std::{env, thread};
 
 struct CustomContext;
 
 impl ClientContext for CustomContext {}
 
-impl ConsumerContext for CustomContext {
-    fn pre_rebalance(&self, rebalance: &Rebalance) {
-        info!("Pre rebalance {:?}", rebalance);
-    }
-
-    fn post_rebalance(&self, rebalance: &Rebalance) {
-        info!("Post rebalance {:?}", rebalance);
-    }
-
-    fn commit_callback(&self, result: KafkaResult<()>, _offsets: &TopicPartitionList) {
-        info!("Committing offsets: {:?}", result);
-    }
-}
+impl ConsumerContext for CustomContext {}
 
 type LoggingConsumer = BaseConsumer<CustomContext>;
+
+struct OffsetChecker {
+    partitions: Vec<i32>,
+    goal: Vec<(i32, i64)>,
+    sender: Option<Sender<Vec<i32>>>,
+}
+
+impl OffsetChecker {
+    fn new(partitions: Vec<i32>, goal: Vec<(i32, i64)>, sender: Sender<Vec<i32>>) -> OffsetChecker {
+        info!("created offset checker with: {:?}", goal);
+        if goal.is_empty() {
+            sender.send(partitions.clone()).unwrap();
+            OffsetChecker {
+                partitions,
+                goal,
+                sender: None,
+            }
+        } else {
+            OffsetChecker {
+                partitions,
+                goal,
+                sender: Some(sender),
+            }
+        }
+    }
+    fn check(&mut self, bm: BorrowedMessage) {
+        if let Some(sender) = &self.sender {
+            let goal_part = (bm.partition(), bm.offset());
+            if let Some(pos) = self.goal.iter().position(|n| *n == goal_part) {
+                self.goal.remove(pos);
+                if self.goal.is_empty() {
+                    sender.send(self.partitions.clone()).unwrap();
+                    self.sender = None;
+                }
+            }
+        }
+    }
+}
 
 fn get_partition_count(consumer_config: ClientConfig, topic: &str) -> Result<usize, BkesError> {
     let context = CustomContext;
@@ -39,44 +66,56 @@ fn get_partition_count(consumer_config: ClientConfig, topic: &str) -> Result<usi
     Ok(metadata.topics().deref()[0].partitions().len())
 }
 
-fn load_partition_to_db(
+fn load_partitions_to_db(
     config: ClientConfig,
     topic: String,
-    partition: i32,
+    partitions: Vec<i32>,
     storage: Storage,
-    sender: Sender<i32>,
+    sender: Sender<Vec<i32>>,
 ) {
     let context = CustomContext;
     let consumer: LoggingConsumer = config.create_with_context(context).unwrap();
-    let mut topic_partition_list = TopicPartitionList::with_capacity(1);
-    let offset = storage.get_offset(partition).unwrap();
-    info!("Found offset: {:?} for partition: {}", offset, partition);
-    topic_partition_list
-        .add_partition_offset(&topic, partition, offset)
-        .unwrap();
-    consumer
-        .assign(&topic_partition_list)
-        .expect("Can't subscribe to specified topic-partition");
-    let (_, high_watermark) = consumer
-        .fetch_watermarks(&topic, partition, Timeout::Never)
-        .unwrap();
-    match offset {
-        Offset::Beginning => {
-            if high_watermark == 0 {
-                sender.send(partition).unwrap()
+    let mut topic_partition_list = TopicPartitionList::with_capacity(partitions.len());
+    let mut goal = vec![];
+    for partition in &partitions {
+        let offset = storage.get_offset(*partition).unwrap();
+        info!("Found offset: {:?} for partition: {}", offset, partition);
+        topic_partition_list
+            .add_partition_offset(&topic, *partition, offset)
+            .unwrap();
+        consumer
+            .assign(&topic_partition_list)
+            .expect("Can't subscribe to specified topic-partition");
+        let (_, high_watermark) = consumer
+            .fetch_watermarks(&topic, *partition, Timeout::Never)
+            .unwrap();
+        info!(
+            "Found high watermark: {:?} for partition: {}",
+            high_watermark, partition
+        );
+        match offset {
+            Offset::Beginning => {
+                if high_watermark != 0 {
+                    goal.push((*partition, high_watermark - 1))
+                }
             }
-        }
-        Offset::Offset(o) => {
-            if o == high_watermark {
-                sender.send(partition).unwrap()
+            Offset::Offset(o) => {
+                if o > high_watermark {
+                    panic!("Stored offset is greater than watermark. Likely a volume is used that belongs to another Kafka topic.")
+                }
+                if o < high_watermark {
+                    goal.push((*partition, high_watermark - 1))
+                }
             }
-        }
-        _ => (),
-    };
+            _ => (),
+        };
+    }
+    let mut checker = OffsetChecker::new(partitions, goal, sender);
     for message in consumer.iter() {
         let bm = message.unwrap();
         let partition = bm.partition();
         let offset = bm.offset();
+        info!("read offset: {}", offset);
         let record_time = bm
             .timestamp()
             .to_millis()
@@ -86,9 +125,7 @@ fn load_partition_to_db(
         storage
             .add_from_record(key, value, partition, offset, record_time)
             .unwrap();
-        if offset + 1 == high_watermark {
-            sender.send(partition).unwrap()
-        }
+        checker.check(bm);
     }
 }
 
@@ -110,21 +147,38 @@ pub(crate) fn sync(kafka_topic: String, kafka_brokers: String) -> Result<Storage
         )));
     }
     info!("Found {} partitions", partitions);
-    let storage = Storage::new();
-    let start_time = SystemTime::now();
-    let (s, receiver) = mpsc::channel();
+    let threads = min(
+        partitions,
+        env::var("MAX_CONSUMER_THREADS")
+            .expect("MAX_CONSUMER_THREADS env property not set")
+            .parse::<i32>()
+            .expect("set value for MAX_CONSUMER_THREADS cant be parsed to a number"),
+    );
+    let mut partition_groups = vec![];
+    for _ in 0..threads {
+        partition_groups.push(vec![])
+    }
     for partition in 0..partitions {
+        partition_groups
+            .get_mut((partition % threads) as usize)
+            .unwrap()
+            .push(partition)
+    }
+    let storage = Storage::new();
+    let (s, receiver) = mpsc::channel();
+    let start_time = SystemTime::now();
+    for partitions in partition_groups {
         let config = consumer_config.clone();
         let topic = String::from(&kafka_topic);
         let storage_clone = storage.clone();
         let sender = s.clone();
         thread::spawn(move || {
-            load_partition_to_db(config, topic, partition, storage_clone, sender)
+            load_partitions_to_db(config, topic, partitions, storage_clone, sender)
         });
     }
-    for _ in 0..partitions {
+    for _ in 0..threads {
         let p = receiver.recv()?;
-        info!("partition {} is ready", p)
+        info!("partitions {:?} are ready", p)
     }
     info!(
         "Done reading offsets to end, took {:?} seconds",
