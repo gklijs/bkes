@@ -15,7 +15,7 @@ RUN cargo build --release &&\
     mkdir -p /build-out &&\
     cp target/release/bkes /build-out/
 
-FROM ubuntu:groovy-20210325
+FROM debian:buster-slim
 
 COPY --from=builder /build-out/bkes /
 CMD /bkes
