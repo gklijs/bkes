@@ -15,7 +15,7 @@ RUN cargo build --release &&\
     mkdir -p /build-out &&\
     cp target/release/bkes /build-out/
 
-FROM debian:buster-slim
+FROM ubuntu:hirsute-20210401
 
 COPY --from=builder /build-out/bkes /
 CMD /bkes
