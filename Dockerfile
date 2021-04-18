@@ -15,7 +15,7 @@ RUN cargo build --release &&\
     mkdir -p /build-out &&\
     cp target/release/bkes /build-out/
 
-FROM ubuntu:hirsute-20210401
+FROM ubuntu:rolling
 
 COPY --from=builder /build-out/bkes /
 CMD /bkes
