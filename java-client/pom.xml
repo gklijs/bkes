@@ -4,7 +4,7 @@
 	<modelVersion>4.0.0</modelVersion>
 	<groupId>tech.gklijs.bikes</groupId>
 	<artifactId>java-client</artifactId>
-	<version>0.0.1-SNAPSHOT</version>
+	<version>0.0.3</version>
 	<name>java-client</name>
 	<description>gRPC java client to interact with bkes server</description>
 	<properties>
@@ -19,6 +19,12 @@
 		<protobuf.plugin.version>0.6.1</protobuf.plugin.version>
 		<os-maven-plugin.version>1.6.1</os-maven-plugin.version>
 	</properties>
+	<scm>
+		<connection>scm:git:${project.scm.url}</connection>
+		<developerConnection>scm:git:${project.scm.url}</developerConnection>
+		<url>git@github.com:gklijs/bkes.git</url>
+		<tag>HEAD</tag>
+	</scm>
 	<dependencies>
 		<dependency>
 			<groupId>io.grpc</groupId>
@@ -65,7 +71,7 @@
 		<repository>
 			<id>ossrh</id>
 			<name>Central Repository OSSRH</name>
-			<url>https://s01.oss.sonatype.org/content/repositories/releases/</url>
+			<url>https://s01.oss.sonatype.org/service/local/staging/deploy/maven2/</url>
 		</repository>
 	</distributionManagement>
 	<build>
