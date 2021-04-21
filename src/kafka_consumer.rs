@@ -74,7 +74,6 @@ fn load_partitions_to_db(
 ) {
     let context = CustomContext;
     let consumer: LoggingConsumer = config.create_with_context(context).unwrap();
-    consumer.fetch_metadata(Some(&topic), Timeout::Never).expect("Metadata could not be fetched");
     let mut topic_partition_list = TopicPartitionList::with_capacity(partitions.len());
     let mut goal = vec![];
     for partition in &partitions {
@@ -88,7 +87,7 @@ fn load_partitions_to_db(
             .expect("Can't subscribe to specified topic-partition");
         let (_, high_watermark) = consumer
             .fetch_watermarks(&topic, *partition, Timeout::Never)
-            .unwrap();
+            .unwrap_or((0, 0));
         debug!(
             "Found high watermark: {:?} for partition: {}",
             high_watermark, partition
