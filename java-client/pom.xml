@@ -4,7 +4,7 @@
 	<modelVersion>4.0.0</modelVersion>
 	<groupId>tech.gklijs.bkes</groupId>
 	<artifactId>java-client</artifactId>
-	<version>0.0.5</version>
+	<version>0.0.6</version>
 	<name>java-client</name>
 	<description>gRPC java client to interact with bkes server</description>
 	<url>https://github.com/gklijs/bkes</url>
