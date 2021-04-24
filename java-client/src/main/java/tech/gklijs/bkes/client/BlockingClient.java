@@ -25,7 +25,10 @@ public class BlockingClient {
      */
     public BlockingClient(String host, int port) {
         stub = BkesGrpc.newBlockingStub(
-                NettyChannelBuilder.forAddress(host, port).build()
+                NettyChannelBuilder
+                        .forAddress(host, port)
+                        .usePlaintext()
+                        .build()
         );
     }
 
@@ -64,7 +67,7 @@ public class BlockingClient {
     /**
      * Retrieve all the records for the key
      *
-     * @param key key of the item, should not yet exist
+     * @param key key of the aggregate, if it doesn't exist will return an error
      * @return error or success
      */
     public RetrieveReply retrieve(String key) {

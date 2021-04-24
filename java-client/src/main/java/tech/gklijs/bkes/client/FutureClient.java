@@ -20,12 +20,16 @@ public class FutureClient {
 
     /**
      * Creates a new future client
+     *
      * @param host host of bkes server
      * @param port port of bkes server
      */
     public FutureClient(String host, int port) {
         stub = BkesGrpc.newFutureStub(
-                NettyChannelBuilder.forAddress(host, port).build()
+                NettyChannelBuilder
+                        .forAddress(host, port)
+                        .usePlaintext()
+                        .build()
         );
     }
 
@@ -64,7 +68,7 @@ public class FutureClient {
     /**
      * Retrieve all the records for the key
      *
-     * @param key key of the item, should not yet exist
+     * @param key key of the aggregate, if it doesn't exist will return an error
      * @return error or success
      */
     public ListenableFuture<RetrieveReply> retrieve(String key) {
