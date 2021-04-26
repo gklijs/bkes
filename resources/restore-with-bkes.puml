@@ -1,0 +1,16 @@
+@startuml
+skinparam shadowing false
+skinparam defaultFontName Roboto
+skinparam defaultFontSize 26
+
+[Command handler] as ch1 #Yellow
+[Kafka consumer] as kp1 #LightGreen
+[Broker] as ka #LightGrey
+[BKES] as bk #LightGreen
+
+ch1 <-right-> bk: fetch all for key\nwhen needed
+bk -down-> kp1
+kp1 -right-> ka
+ka --> bk: always reading to\nkeep up
+
+@enduml

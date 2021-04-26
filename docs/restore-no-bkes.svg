@@ -1,0 +1,30 @@
+<?xml version="1.0" encoding="UTF-8" standalone="no"?><svg xmlns="http://www.w3.org/2000/svg" xmlns:xlink="http://www.w3.org/1999/xlink" contentScriptType="application/ecmascript" contentStyleType="text/css" height="510px" preserveAspectRatio="none" style="width:1058px;height:510px;" version="1.1" viewBox="0 0 1058 510" width="1058px" zoomAndPan="magnify"><defs/><g><!--MD5=[a9a3fafae8a46278d4baa94c9207eefa]
+entity ch1--><rect fill="#FFFF00" height="120.9375" style="stroke:#A80036;stroke-width:3.0;" width="506" x="14" y="14"/><rect fill="#FFFF00" height="20" style="stroke:#A80036;stroke-width:3.0;" width="30" x="480" y="24"/><rect fill="#FFFF00" height="4" style="stroke:#A80036;stroke-width:3.0;" width="8" x="476" y="28"/><rect fill="#FFFF00" height="4" style="stroke:#A80036;stroke-width:3.0;" width="8" x="476" y="36"/><text fill="#000000" font-family="Roboto" font-size="52" lengthAdjust="spacing" textLength="426" x="44" y="102.2422">Command handler</text><!--MD5=[f69108ea58c51f7426ddc4843ae58105]
+entity kp1--><rect fill="#90EE90" height="120.9375" style="stroke:#A80036;stroke-width:3.0;" width="456" x="591" y="14"/><rect fill="#90EE90" height="20" style="stroke:#A80036;stroke-width:3.0;" width="30" x="1007" y="24"/><rect fill="#90EE90" height="4" style="stroke:#A80036;stroke-width:3.0;" width="8" x="1003" y="28"/><rect fill="#90EE90" height="4" style="stroke:#A80036;stroke-width:3.0;" width="8" x="1003" y="36"/><text fill="#000000" font-family="Roboto" font-size="52" lengthAdjust="spacing" textLength="376" x="621" y="102.2422">Kafka consumer</text><!--MD5=[6d2a6cf4a8ae9c6575d0c7e23e26fe98]
+entity ka--><rect fill="#D3D3D3" height="120.9375" style="stroke:#A80036;stroke-width:3.0;" width="232" x="427" y="378"/><rect fill="#D3D3D3" height="20" style="stroke:#A80036;stroke-width:3.0;" width="30" x="619" y="388"/><rect fill="#D3D3D3" height="4" style="stroke:#A80036;stroke-width:3.0;" width="8" x="615" y="392"/><rect fill="#D3D3D3" height="4" style="stroke:#A80036;stroke-width:3.0;" width="8" x="615" y="400"/><text fill="#000000" font-family="Roboto" font-size="52" lengthAdjust="spacing" textLength="152" x="457" y="466.2422">Broker</text><!--MD5=[4bf02a43e5b1096d82d339f38e1b6402]
+link ch1 to kp1--><path d="M520.36,74 C540.4,74 560.42,74 580.46,74 " fill="none" id="ch1-to-kp1" style="stroke:#A80036;stroke-width:2.0;"/><polygon fill="#A80036" points="590.94,74,572.94,66,580.94,74,572.94,82,590.94,74" style="stroke:#A80036;stroke-width:2.0;"/><!--MD5=[649da31936f1aba2a04e7aceab679fea]
+link kp1 to ka--><path d="M797.52,134.48 C776.62,186.32 741.24,262.2 695,318 C679,337.3 659.32,355.42 639.5,371.4 " fill="none" id="kp1-to-ka" style="stroke:#A80036;stroke-width:2.0;"/><polygon fill="#A80036" points="631.6,377.66,650.6862,372.79,639.4503,371.4654,640.7748,360.2295,631.6,377.66" style="stroke:#A80036;stroke-width:2.0;"/><!--MD5=[e8b11fcf404bdabe74454c7834233c5d]
+link ka to ch1--><path d="M429.22,377.86 C404.3,361.14 379.78,341.08 361,318 C319.8,267.36 295.12,196.56 281.48,144.62 " fill="none" id="ka-to-ch1" style="stroke:#A80036;stroke-width:2.0;"/><polygon fill="#A80036" points="278.88,134.48,275.5382,153.8922,281.3322,144.1747,291.0497,149.9687,278.88,134.48" style="stroke:#A80036;stroke-width:2.0;"/><text fill="#000000" font-family="Roboto" font-size="52" lengthAdjust="spacing" textLength="216" x="412" y="244.2422">all events</text><text fill="#000000" font-family="Roboto" font-size="52" lengthAdjust="spacing" textLength="314" x="363" y="305.1797">from partition</text><!--MD5=[80c398d68876b4db72d50614303595d1]
+@startuml
+skinparam shadowing false
+skinparam defaultFontName Roboto
+skinparam defaultFontSize 26
+
+[Command handler] as ch1 #Yellow
+[Kafka consumer] as kp1 #LightGreen
+[Broker] as ka #LightGrey
+
+ch1 -right-> kp1
+kp1 - -> ka
+ka - -> ch1: all events\nfrom partition
+
+@enduml
+
+PlantUML version 1.2021.4(Sun Apr 04 10:49:39 CEST 2021)
+(GPL source distribution)
+Java Runtime: OpenJDK Runtime Environment
+JVM: Dynamic Code Evolution 64-Bit Server VM
+Default Encoding: UTF-8
+Language: en
+Country: NL
+--></g></svg>

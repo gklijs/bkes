@@ -1,0 +1,34 @@
+<?xml version="1.0" encoding="UTF-8" standalone="no"?><svg xmlns="http://www.w3.org/2000/svg" xmlns:xlink="http://www.w3.org/1999/xlink" contentScriptType="application/ecmascript" contentStyleType="text/css" height="586px" preserveAspectRatio="none" style="width:1574px;height:586px;" version="1.1" viewBox="0 0 1574 586" width="1574px" zoomAndPan="magnify"><defs/><g><!--MD5=[a9a3fafae8a46278d4baa94c9207eefa]
+entity ch1--><rect fill="#FFFF00" height="120.9375" style="stroke:#A80036;stroke-width:3.0;" width="506" x="14" y="89.6953"/><rect fill="#FFFF00" height="20" style="stroke:#A80036;stroke-width:3.0;" width="30" x="480" y="99.6953"/><rect fill="#FFFF00" height="4" style="stroke:#A80036;stroke-width:3.0;" width="8" x="476" y="103.6953"/><rect fill="#FFFF00" height="4" style="stroke:#A80036;stroke-width:3.0;" width="8" x="476" y="111.6953"/><text fill="#000000" font-family="Roboto" font-size="52" lengthAdjust="spacing" textLength="426" x="44" y="177.9375">Command handler</text><!--MD5=[f69108ea58c51f7426ddc4843ae58105]
+entity kp1--><rect fill="#90EE90" height="120.9375" style="stroke:#A80036;stroke-width:3.0;" width="456" x="573" y="453.6953"/><rect fill="#90EE90" height="20" style="stroke:#A80036;stroke-width:3.0;" width="30" x="989" y="463.6953"/><rect fill="#90EE90" height="4" style="stroke:#A80036;stroke-width:3.0;" width="8" x="985" y="467.6953"/><rect fill="#90EE90" height="4" style="stroke:#A80036;stroke-width:3.0;" width="8" x="985" y="475.6953"/><text fill="#000000" font-family="Roboto" font-size="52" lengthAdjust="spacing" textLength="376" x="603" y="541.9375">Kafka consumer</text><!--MD5=[6d2a6cf4a8ae9c6575d0c7e23e26fe98]
+entity ka--><rect fill="#D3D3D3" height="120.9375" style="stroke:#A80036;stroke-width:3.0;" width="232" x="1099" y="453.6953"/><rect fill="#D3D3D3" height="20" style="stroke:#A80036;stroke-width:3.0;" width="30" x="1291" y="463.6953"/><rect fill="#D3D3D3" height="4" style="stroke:#A80036;stroke-width:3.0;" width="8" x="1287" y="467.6953"/><rect fill="#D3D3D3" height="4" style="stroke:#A80036;stroke-width:3.0;" width="8" x="1287" y="475.6953"/><text fill="#000000" font-family="Roboto" font-size="52" lengthAdjust="spacing" textLength="152" x="1129" y="541.9375">Broker</text><!--MD5=[25e42c86a776e1c683b472489ed04c1e]
+entity bk--><rect fill="#90EE90" height="120.9375" style="stroke:#A80036;stroke-width:3.0;" width="204" x="943" y="89.6953"/><rect fill="#90EE90" height="20" style="stroke:#A80036;stroke-width:3.0;" width="30" x="1107" y="99.6953"/><rect fill="#90EE90" height="4" style="stroke:#A80036;stroke-width:3.0;" width="8" x="1103" y="103.6953"/><rect fill="#90EE90" height="4" style="stroke:#A80036;stroke-width:3.0;" width="8" x="1103" y="111.6953"/><text fill="#000000" font-family="Roboto" font-size="52" lengthAdjust="spacing" textLength="124" x="973" y="177.9375">BKES</text><!--MD5=[4837b57377bdee2e5e3f5ccee1fb032b]
+link ch1 to bk--><path d="M530.28,149.6953 C667.18,149.6953 827.34,149.6953 932.2,149.6953 " fill="none" id="ch1-bk" style="stroke:#A80036;stroke-width:2.0;"/><polygon fill="#A80036" points="942.8,149.6953,924.8,141.6953,932.8,149.6953,924.8,157.6953,942.8,149.6953" style="stroke:#A80036;stroke-width:2.0;"/><polygon fill="#A80036" points="520.14,149.6953,538.14,157.6953,530.14,149.6953,538.14,141.6953,520.14,149.6953" style="stroke:#A80036;stroke-width:2.0;"/><text fill="#000000" font-family="Roboto" font-size="52" lengthAdjust="spacing" textLength="350" x="556.5" y="69.9375">fetch all for key</text><text fill="#000000" font-family="Roboto" font-size="52" lengthAdjust="spacing" textLength="308" x="577.5" y="130.875">when needed</text><!--MD5=[3ba5eb79ee56e75df9cc59818589db7a]
+link bk to kp1--><path d="M1005.26,210.3353 C961.7,274.5953 891.96,377.4753 846.32,444.8353 " fill="none" id="bk-to-kp1" style="stroke:#A80036;stroke-width:2.0;"/><polygon fill="#A80036" points="840.32,453.6753,857.0275,443.2417,845.9196,445.3901,843.7712,434.2823,840.32,453.6753" style="stroke:#A80036;stroke-width:2.0;"/><!--MD5=[649da31936f1aba2a04e7aceab679fea]
+link kp1 to ka--><path d="M1029.02,513.6953 C1048.82,513.6953 1068.62,513.6953 1088.42,513.6953 " fill="none" id="kp1-to-ka" style="stroke:#A80036;stroke-width:2.0;"/><polygon fill="#A80036" points="1098.76,513.6953,1080.76,505.6953,1088.76,513.6953,1080.76,521.6953,1098.76,513.6953" style="stroke:#A80036;stroke-width:2.0;"/><!--MD5=[45f18c843a703c27ad7c5d04f7244546]
+link ka to bk--><path d="M1187.6,453.6753 C1157.5,389.9353 1109.2,287.6353 1077.28,220.0553 " fill="none" id="ka-to-bk" style="stroke:#A80036;stroke-width:2.0;"/><polygon fill="#A80036" points="1072.7,210.3353,1073.1917,230.0269,1076.9882,219.3692,1087.6459,223.1657,1072.7,210.3353" style="stroke:#A80036;stroke-width:2.0;"/><text fill="#000000" font-family="Roboto" font-size="52" lengthAdjust="spacing" textLength="402" x="1157" y="319.9375">always reading to</text><text fill="#000000" font-family="Roboto" font-size="52" lengthAdjust="spacing" textLength="182" x="1267" y="380.875">keep up</text><!--MD5=[5b7dde6e9205652cf3e1c109653c6c15]
+@startuml
+skinparam shadowing false
+skinparam defaultFontName Roboto
+skinparam defaultFontSize 26
+
+[Command handler] as ch1 #Yellow
+[Kafka consumer] as kp1 #LightGreen
+[Broker] as ka #LightGrey
+[BKES] as bk #LightGreen
+
+ch1 <-right-> bk: fetch all for key\nwhen needed
+bk -down-> kp1
+kp1 -right-> ka
+ka - -> bk: always reading to\nkeep up
+
+@enduml
+
+PlantUML version 1.2021.4(Sun Apr 04 10:49:39 CEST 2021)
+(GPL source distribution)
+Java Runtime: OpenJDK Runtime Environment
+JVM: Dynamic Code Evolution 64-Bit Server VM
+Default Encoding: UTF-8
+Language: en
+Country: NL
+--></g></svg>

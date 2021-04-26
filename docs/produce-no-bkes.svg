@@ -1,0 +1,36 @@
+<?xml version="1.0" encoding="UTF-8" standalone="no"?><svg xmlns="http://www.w3.org/2000/svg" xmlns:xlink="http://www.w3.org/1999/xlink" contentScriptType="application/ecmascript" contentStyleType="text/css" height="626px" preserveAspectRatio="none" style="width:1120px;height:626px;" version="1.1" viewBox="0 0 1120 626" width="1120px" zoomAndPan="magnify"><defs/><g><!--MD5=[a9a3fafae8a46278d4baa94c9207eefa]
+entity ch1--><rect fill="#FFFF00" height="120.9375" style="stroke:#A80036;stroke-width:3.0;" width="548" x="14" y="14"/><rect fill="#FFFF00" height="20" style="stroke:#A80036;stroke-width:3.0;" width="30" x="522" y="24"/><rect fill="#FFFF00" height="4" style="stroke:#A80036;stroke-width:3.0;" width="8" x="518" y="28"/><rect fill="#FFFF00" height="4" style="stroke:#A80036;stroke-width:3.0;" width="8" x="518" y="36"/><text fill="#000000" font-family="Roboto" font-size="52" lengthAdjust="spacing" textLength="468" x="44" y="102.2422">Command handler 1</text><!--MD5=[37cf825fbccc93491095e98524e24cc2]
+entity ch2--><rect fill="#FFFF00" height="120.9375" style="stroke:#A80036;stroke-width:3.0;" width="548" x="14" y="494"/><rect fill="#FFFF00" height="20" style="stroke:#A80036;stroke-width:3.0;" width="30" x="522" y="504"/><rect fill="#FFFF00" height="4" style="stroke:#A80036;stroke-width:3.0;" width="8" x="518" y="508"/><rect fill="#FFFF00" height="4" style="stroke:#A80036;stroke-width:3.0;" width="8" x="518" y="516"/><text fill="#000000" font-family="Roboto" font-size="52" lengthAdjust="spacing" textLength="468" x="44" y="582.2422">Command handler 2</text><!--MD5=[f69108ea58c51f7426ddc4843ae58105]
+entity kp1--><rect fill="#90EE90" height="120.9375" style="stroke:#A80036;stroke-width:3.0;" width="476" x="632" y="14"/><rect fill="#90EE90" height="20" style="stroke:#A80036;stroke-width:3.0;" width="30" x="1068" y="24"/><rect fill="#90EE90" height="4" style="stroke:#A80036;stroke-width:3.0;" width="8" x="1064" y="28"/><rect fill="#90EE90" height="4" style="stroke:#A80036;stroke-width:3.0;" width="8" x="1064" y="36"/><text fill="#000000" font-family="Roboto" font-size="52" lengthAdjust="spacing" textLength="396" x="662" y="102.2422">Kafka producer 1</text><!--MD5=[6d819e8e35d629da4d9d0b393aa8b564]
+entity kp2--><rect fill="#90EE90" height="120.9375" style="stroke:#A80036;stroke-width:3.0;" width="476" x="632" y="494"/><rect fill="#90EE90" height="20" style="stroke:#A80036;stroke-width:3.0;" width="30" x="1068" y="504"/><rect fill="#90EE90" height="4" style="stroke:#A80036;stroke-width:3.0;" width="8" x="1064" y="508"/><rect fill="#90EE90" height="4" style="stroke:#A80036;stroke-width:3.0;" width="8" x="1064" y="516"/><text fill="#000000" font-family="Roboto" font-size="52" lengthAdjust="spacing" textLength="396" x="662" y="582.2422">Kafka producer 2</text><!--MD5=[6d2a6cf4a8ae9c6575d0c7e23e26fe98]
+entity ka--><rect fill="#D3D3D3" height="120.9375" style="stroke:#A80036;stroke-width:3.0;" width="232" x="754" y="254"/><rect fill="#D3D3D3" height="20" style="stroke:#A80036;stroke-width:3.0;" width="30" x="946" y="264"/><rect fill="#D3D3D3" height="4" style="stroke:#A80036;stroke-width:3.0;" width="8" x="942" y="268"/><rect fill="#D3D3D3" height="4" style="stroke:#A80036;stroke-width:3.0;" width="8" x="942" y="276"/><text fill="#000000" font-family="Roboto" font-size="52" lengthAdjust="spacing" textLength="152" x="784" y="342.2422">Broker</text><!--MD5=[4bf02a43e5b1096d82d339f38e1b6402]
+link ch1 to kp1--><path d="M562.52,74 C582.12,74 601.72,74 621.32,74 " fill="none" id="ch1-to-kp1" style="stroke:#A80036;stroke-width:2.0;"/><polygon fill="#A80036" points="631.58,74,613.58,66,621.58,74,613.58,82,631.58,74" style="stroke:#A80036;stroke-width:2.0;"/><!--MD5=[1253b293a0d6ac8a5f9b1094b2d01e21]
+link ch2 to kp2--><path d="M562.52,554 C582.12,554 601.72,554 621.32,554 " fill="none" id="ch2-to-kp2" style="stroke:#A80036;stroke-width:2.0;"/><polygon fill="#A80036" points="631.58,554,613.58,546,621.58,554,613.58,562,631.58,554" style="stroke:#A80036;stroke-width:2.0;"/><!--MD5=[649da31936f1aba2a04e7aceab679fea]
+link kp1 to ka--><path d="M870,134.34 C870,167.24 870,208.54 870,243.04 " fill="none" id="kp1-to-ka" style="stroke:#A80036;stroke-width:2.0;"/><polygon fill="#A80036" points="870,253.52,878,235.52,870,243.52,862,235.52,870,253.52" style="stroke:#A80036;stroke-width:2.0;"/><!--MD5=[2e40b2ba8f6f4752eda036db68f59dae]
+reverse link ka to kp2--><path d="M870,384.8 C870,419.28 870,460.58 870,493.52 " fill="none" id="ka-backto-kp2" style="stroke:#A80036;stroke-width:2.0;"/><polygon fill="#A80036" points="870,374.34,862,392.34,870,384.34,878,392.34,870,374.34" style="stroke:#A80036;stroke-width:2.0;"/><!--MD5=[310ec5c4fbe048d6c6800997f2598c6a]
+@startuml
+skinparam shadowing false
+skinparam defaultFontName Roboto
+skinparam defaultFontSize 26
+
+[Command handler 1] as ch1 #Yellow
+[Command handler 2] as ch2 #Yellow
+[Kafka producer 1] as kp1 #LightGreen
+[Kafka producer 2] as kp2 #LightGreen
+[Broker] as ka #LightGrey
+
+ch1 -right-> kp1
+ch2 -right-> kp2
+kp1 - -> ka
+kp2 -up-> ka
+
+@enduml
+
+PlantUML version 1.2021.4(Sun Apr 04 10:49:39 CEST 2021)
+(GPL source distribution)
+Java Runtime: OpenJDK Runtime Environment
+JVM: Dynamic Code Evolution 64-Bit Server VM
+Default Encoding: UTF-8
+Language: en
+Country: NL
+--></g></svg>

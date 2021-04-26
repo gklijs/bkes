@@ -1,0 +1,17 @@
+@startuml
+skinparam shadowing false
+skinparam defaultFontName Roboto
+skinparam defaultFontSize 26
+
+[Command handler 1] as ch1 #Yellow
+[Command handler 2] as ch2 #Yellow
+[Kafka producer 1] as kp1 #LightGreen
+[Kafka producer 2] as kp2 #LightGreen
+[Broker] as ka #LightGrey
+
+ch1 -right-> kp1
+ch2 -right-> kp2
+kp1 --> ka
+kp2 -up-> ka
+
+@enduml

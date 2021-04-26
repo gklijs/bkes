@@ -1,0 +1,38 @@
+<?xml version="1.0" encoding="UTF-8" standalone="no"?><svg xmlns="http://www.w3.org/2000/svg" xmlns:xlink="http://www.w3.org/1999/xlink" contentScriptType="application/ecmascript" contentStyleType="text/css" height="754px" preserveAspectRatio="none" style="width:1352px;height:754px;" version="1.1" viewBox="0 0 1352 754" width="1352px" zoomAndPan="magnify"><defs/><g><!--MD5=[a9a3fafae8a46278d4baa94c9207eefa]
+entity ch1--><rect fill="#FFFF00" height="120.9375" style="stroke:#A80036;stroke-width:3.0;" width="548" x="14" y="318"/><rect fill="#FFFF00" height="20" style="stroke:#A80036;stroke-width:3.0;" width="30" x="522" y="328"/><rect fill="#FFFF00" height="4" style="stroke:#A80036;stroke-width:3.0;" width="8" x="518" y="332"/><rect fill="#FFFF00" height="4" style="stroke:#A80036;stroke-width:3.0;" width="8" x="518" y="340"/><text fill="#000000" font-family="Roboto" font-size="52" lengthAdjust="spacing" textLength="468" x="44" y="406.2422">Command handler 1</text><!--MD5=[37cf825fbccc93491095e98524e24cc2]
+entity ch2--><rect fill="#FFFF00" height="120.9375" style="stroke:#A80036;stroke-width:3.0;" width="548" x="460" y="14"/><rect fill="#FFFF00" height="20" style="stroke:#A80036;stroke-width:3.0;" width="30" x="968" y="24"/><rect fill="#FFFF00" height="4" style="stroke:#A80036;stroke-width:3.0;" width="8" x="964" y="28"/><rect fill="#FFFF00" height="4" style="stroke:#A80036;stroke-width:3.0;" width="8" x="964" y="36"/><text fill="#000000" font-family="Roboto" font-size="52" lengthAdjust="spacing" textLength="468" x="490" y="102.2422">Command handler 2</text><!--MD5=[6d2a6cf4a8ae9c6575d0c7e23e26fe98]
+entity ka--><rect fill="#D3D3D3" height="120.9375" style="stroke:#A80036;stroke-width:3.0;" width="232" x="1008" y="622"/><rect fill="#D3D3D3" height="20" style="stroke:#A80036;stroke-width:3.0;" width="30" x="1200" y="632"/><rect fill="#D3D3D3" height="4" style="stroke:#A80036;stroke-width:3.0;" width="8" x="1196" y="636"/><rect fill="#D3D3D3" height="4" style="stroke:#A80036;stroke-width:3.0;" width="8" x="1196" y="644"/><text fill="#000000" font-family="Roboto" font-size="52" lengthAdjust="spacing" textLength="152" x="1038" y="710.2422">Broker</text><!--MD5=[2bac49edfb0258fb6533d5452e7d5aa0]
+entity kp--><rect fill="#90EE90" height="120.9375" style="stroke:#A80036;stroke-width:3.0;" width="434" x="907" y="318"/><rect fill="#90EE90" height="20" style="stroke:#A80036;stroke-width:3.0;" width="30" x="1301" y="328"/><rect fill="#90EE90" height="4" style="stroke:#A80036;stroke-width:3.0;" width="8" x="1297" y="332"/><rect fill="#90EE90" height="4" style="stroke:#A80036;stroke-width:3.0;" width="8" x="1297" y="340"/><text fill="#000000" font-family="Roboto" font-size="52" lengthAdjust="spacing" textLength="354" x="937" y="406.2422">Kafka producer</text><!--MD5=[25e42c86a776e1c683b472489ed04c1e]
+entity bk--><rect fill="#90EE90" height="120.9375" style="stroke:#A80036;stroke-width:3.0;" width="204" x="632" y="318"/><rect fill="#90EE90" height="20" style="stroke:#A80036;stroke-width:3.0;" width="30" x="796" y="328"/><rect fill="#90EE90" height="4" style="stroke:#A80036;stroke-width:3.0;" width="8" x="792" y="332"/><rect fill="#90EE90" height="4" style="stroke:#A80036;stroke-width:3.0;" width="8" x="792" y="340"/><text fill="#000000" font-family="Roboto" font-size="52" lengthAdjust="spacing" textLength="124" x="662" y="406.2422">BKES</text><!--MD5=[4837b57377bdee2e5e3f5ccee1fb032b]
+link ch1 to bk--><path d="M562.4,378 C582,378 601.6,378 621.2,378 " fill="none" id="ch1-to-bk" style="stroke:#A80036;stroke-width:2.0;"/><polygon fill="#A80036" points="631.44,378,613.44,370,621.44,378,613.44,386,631.44,378" style="stroke:#A80036;stroke-width:2.0;"/><!--MD5=[6bc0bebfa8a37462065a436e0f251a10]
+link ch2 to bk--><path d="M756.82,134.54 C763.04,153.24 768.9,174.22 772,194 C776.42,222.1 776.42,229.9 772,258 C769.42,274.38 764.96,291.58 759.98,307.62 " fill="none" id="ch2-to-bk" style="stroke:#A80036;stroke-width:2.0;"/><polygon fill="#A80036" points="756.82,317.46,769.943,302.7703,759.8792,307.9394,754.71,297.8756,756.82,317.46" style="stroke:#A80036;stroke-width:2.0;"/><!--MD5=[304bb27bdf326d04d4ef8852526599f9]
+reverse link ch2 to bk--><path d="M674.32,142.92 C663.52,158.66 653.82,176.1 648,194 C639.2,221.04 639.2,230.96 648,258 C654.9,279.22 667.24,299.78 680.42,317.64 " fill="none" id="ch2-backto-bk" style="stroke:#A80036;stroke-width:2.0;"/><polygon fill="#A80036" points="680.42,134.36,663.4611,144.3798,674.6184,142.5051,676.4932,153.6623,680.42,134.36" style="stroke:#A80036;stroke-width:2.0;"/><text fill="#000000" font-family="Roboto" font-size="52" lengthAdjust="spacing" textLength="112" x="650" y="244.2422">error</text><!--MD5=[0095c541daa27c2b910d84a4b3d75cbf]
+link bk to kp--><path d="M836.08,378 C856.18,378 876.3,378 896.42,378 " fill="none" id="bk-to-kp" style="stroke:#A80036;stroke-width:2.0;"/><polygon fill="#A80036" points="906.92,378,888.92,370,896.92,378,888.92,386,906.92,378" style="stroke:#A80036;stroke-width:2.0;"/><!--MD5=[f36a90e6129ee49c6e0d7535180038a2]
+link kp to ka--><path d="M1124,438.56 C1124,488.12 1124,559.2 1124,611.42 " fill="none" id="kp-to-ka" style="stroke:#A80036;stroke-width:2.0;"/><polygon fill="#A80036" points="1124,621.6,1132,603.6,1124,611.6,1116,603.6,1124,621.6" style="stroke:#A80036;stroke-width:2.0;"/><text fill="#000000" font-family="Roboto" font-size="52" lengthAdjust="spacing" textLength="192" x="1126" y="548.2422">only one</text><!--MD5=[af498ef46e110c9c48b45e6377a3338e]
+@startuml
+skinparam shadowing false
+skinparam defaultFontName Roboto
+skinparam defaultFontSize 26
+
+[Command handler 1] as ch1 #Yellow
+[Command handler 2] as ch2 #Yellow
+[Broker] as ka #LightGrey
+[Kafka producer] as kp #LightGreen
+[BKES] as bk #LightGreen
+
+ch1 -> bk
+ch2 - -> bk
+bk -left-> ch2: error
+bk -right-> kp
+kp - -> ka: only one
+
+@enduml
+
+PlantUML version 1.2021.4(Sun Apr 04 10:49:39 CEST 2021)
+(GPL source distribution)
+Java Runtime: OpenJDK Runtime Environment
+JVM: Dynamic Code Evolution 64-Bit Server VM
+Default Encoding: UTF-8
+Language: en
+Country: NL
+--></g></svg>
