@@ -21,7 +21,7 @@
         <project.reporting.outputEncoding>UTF-8</project.reporting.outputEncoding>
         <maven.compiler.source>11</maven.compiler.source>
         <maven.compiler.target>11</maven.compiler.target>
-        <io.grpc.version>1.40.1</io.grpc.version>
+        <io.grpc.version>1.41.0</io.grpc.version>
         <netty.version>4.1.68.Final</netty.version>
         <protoc.version>3.15.7</protoc.version>
         <junit-jupiter.version>5.7.1</junit-jupiter.version>
