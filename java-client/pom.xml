@@ -22,7 +22,7 @@
         <maven.compiler.source>11</maven.compiler.source>
         <maven.compiler.target>11</maven.compiler.target>
         <io.grpc.version>1.44.0</io.grpc.version>
-        <netty.version>4.1.73.Final</netty.version>
+        <netty.version>4.1.74.Final</netty.version>
         <protoc.version>3.15.7</protoc.version>
         <junit-jupiter.version>5.7.1</junit-jupiter.version>
         <javax.annotation.version>1.3.2</javax.annotation.version>
