@@ -1,7 +1,23 @@
 # Binary Kafka backed Event Store
 
-This is currently a POC status project and should not be used in production. Giving it a try and providing feedback on
-GitHub Discussions is very much appreciated. The main goal is to have a fast, low memory event store backed by a Kafka topic. A demo project using bkes can be found at [bkes-demo](https://github.com/gklijs/bkes-demo). 
+> **This project is archived and no longer maintained.**
+>
+> bkes was a proof of concept built in April 2021 and never got past that stage. It only supports a single instance per
+> topic, its dependencies are years out of date, and there will be no further releases of the server or of the
+> `tech.gklijs.bkes:java-client` artifact. Please don't use it in production.
+>
+> If you need an event store with optimistic concurrency and per-aggregate reads, consider:
+>
+> - [KurrentDB](https://www.kurrent.io/) (formerly EventStoreDB), a database built for event sourcing.
+> - [Axon Server](https://www.axoniq.io/) or [Marten](https://martendb.io/) (on PostgreSQL), for JVM and .NET stacks.
+> - A plain PostgreSQL events table with a version column, publishing to Kafka through a transactional outbox.
+>
+> If you want to stay Kafka-only, Kafka Streams state stores or snapshots in compacted topics cover many of the same
+> needs.
+>
+> The code below is kept for reference.
+
+The main goal is to have a fast, low memory event store backed by a Kafka topic. A demo project using bkes can be found at [bkes-demo](https://github.com/gklijs/bkes-demo). 
 
 ## Advantages
 
